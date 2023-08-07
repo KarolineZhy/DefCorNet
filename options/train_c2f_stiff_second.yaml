@@ -1,0 +1,96 @@
+# general setting
+name: new_c2f_stiff_second_2_unet_orig
+backend: dp # DataParallel
+type: CorseToFineStiffSecondModel
+num_gpu: auto
+manual_seed: 123
+
+# path
+path:
+  resume_state: ~
+
+# datasets
+datasets:
+  train_dataset:
+    name: TrainDataset
+    type: UltrasoundDataset
+    args:
+      data_root: data/ultrasound/train
+      mode: train
+      use_gaussian: True
+      max_force: 10
+      img_height: 384
+      img_width: 320
+      aug_params:
+        flip_left_right:
+          probability_flip_left_right: 0.5
+        crop_vertical: 
+          probability_crop_vertical: 1
+          crop_width: 256
+          is_fill: False
+  val_dataset:
+    name: ValDataset
+    type: UltrasoundDataset
+    args:
+      data_root: data/ultrasound/val
+      mode: val
+      use_gaussian: True
+      max_force: 10
+      img_height: 384
+      img_width: 320
+      aug_params:
+        flip_left_right:
+          probability_flip_left_right: 0
+        crop_vertical: 
+          probability_crop_vertical: 0
+          crop_width: 320
+          is_fill: False  
+
+  # setting for train dataset
+  batch_size: 2
+  num_worker: 1
+  pin_memory: true
+
+# network setting
+networks:
+  flow_net:
+    type: CorseToFineStiffSecondNet
+    in_channels: 3
+    out_channels: 1
+    #order: first
+
+# training setting
+train:
+  total_iter: 50000
+  optims:
+    flow_net:
+      type: Adam
+      lr: 1.0e-4
+      betas: [0.9, 0.999]
+  schedulers:
+    flow_net:
+      type: none
+  # loss setting 
+  losses:
+    l1:
+      type: L1Loss
+      loss_weight: 1.0
+    first_smooth:
+      type: FirstOrderSmoothLoss
+      loss_weight: 10.0
+    second_smooth:
+      type: SecondOrderSmoothLoss
+      loss_weight: 10.0
+
+# validation setting
+val:
+  val_freq: 500
+test:
+  test_freq: 30000
+
+
+# log setting
+logger:
+  print_freq: 50
+  save_checkpoint_freq: 10000
+  train_log_freq : 50
