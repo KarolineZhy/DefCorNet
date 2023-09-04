@@ -25,7 +25,7 @@ The code implementation of the network see **networks/c2f_stiff_second_network.p
 python train.py --opt options/train_c2f_stiff_second.yaml
 ```
 
-## citation
+## Citation
 The work has been Published in Medical Image Analysis
 ```
 @article{jiang2023defcor,
